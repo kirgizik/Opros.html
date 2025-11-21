@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опросник</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .screen {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            display: none;
+        }
+        #startScreen {
+            display: block;
+        }
+        .question-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        label {
+            display: block;
+            margin-bottom: 12px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        label:hover {
+            border-color: #4CAF50;
+            background-color: #f8fff8;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+        .correct {
+            border: 3px solid #4CAF50;
+            background-color: #d4edda;
+        }
+        .partially {
+            border: 3px solid #ffc107;
+            background-color: #fff3cd;
+        }
+        .incorrect {
+            border: 3px solid #dc3545;
+            background-color: #f8d7da;
+        }
+        .result-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .result-message {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .close-btn {
+            background-color: #6c757d;
+            padding: 10px 25px;
+        }
+        .close-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <!-- Стартовый экран -->
+    <div class="screen" id="startScreen">
+        <h1>Добро пожаловать в опросник!</h1>
+        <p>Ответьте на 2 простых вопроса</p>
+        <button onclick="startTest()">Начать тест</button>
+    </div>
+
+    <!-- Вопрос 1 -->
+    <div class="screen" id="question1Screen">
+        <div class="question-title">1. Как ты относишься к инцесту?</div>
+        <label><input type="radio" name="q1" value="norm"> Норм</label>
+        <label><input type="radio" name="q1" value="da"> Да</label>
+        <label><input type="radio" name="q1" value="hZ"> Хз не участвовал</label>
+        <label><input type="radio" name="q1" value="10_10"> 10/10</label>
+        <label><input type="radio" name="q1" value="eblan"> Я еблан</label>
+        <label><input type="radio" name="q1" value="ploho"> Плохо</label>
+        <label><input type="radio" name="q1" value="best"> Лучше ничего не бывает</label>
+        <label><input type="radio" name="q1" value="super"> Супер</label>
+        <label><input type="radio" name="q1" value="excellent"> Отлично</label>
+        <button onclick="checkQuestion1()" id="q1Btn" disabled>Ответить</button>
+    </div>
+
+    <!-- Вопрос 2 -->
+    <div class="screen" id="question2Screen">
+        <div class="question-title">2. Как ты относишься к оргиям?</div>
+        <label><input type="radio" name="q2" value="norm"> Норм</label>
+        <label><input type="radio" name="q2" value="da"> Да</label>
+        <label><input type="radio" name="q2" value="hZ"> Хз не участвовал</label>
+        <label><input type="radio" name="q2" value="10_10"> 10/10</label>
+        <label><input type="radio" name="q2" value="eblan"> Я еблан</label>
+        <label><input type="radio" name="q2" value="ploho"> Плохо</label>
+        <label><input type="radio" name="q2" value="best"> Лучше ничего не бывает</label>
+        <label><input type="radio" name="q2" value="super"> Супер</label>
+        <label><input type="radio" name="q2" value="excellent"> Отлично</label>
+        <button onclick="checkQuestion2()" id="q2Btn" disabled>Ответить</button>
+    </div>
+
+    <!-- Финальный экран -->
+    <div class="screen" id="finalScreen">
+        <h1>Спасибо за участие!</h1>
+        <p id="finalMessage"></p>
+        <button onclick="location.reload()">Пройти ещё раз</button>
+    </div>
+
+    <!-- Попап с результатом -->
+    <div class="result-popup" id="resultPopup">
+        <div class="result-text" id="resultTitle"></div>
+        <div class="result-message" id="resultMessage"></div>
+        <button class="close-btn" onclick="closeResult()">Продолжить</button>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+
+        function startTest() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('question1Screen').style.display = 'block';
+            
+            // Активация кнопки при выборе ответа
+            const q1Radios = document.querySelectorAll('input[name="q1"]');
+            q1Radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('q1Btn').disabled = false;
+                });
+            });
+        }
+
+        function checkQuestion1() {
+            const answer = document.querySelector('input[name="q1"]:checked').value;
+            const popup = document.getElementById('resultPopup');
+            const title = document.getElementById('resultTitle');
+            const message = document.getElementById('resultMessage');
+
+            popup.style.display = 'block';
+
+            if (answer === 'hZ') {
+                popup.className = 'result-popup partially';
+                title.textContent = 'Частично верно';
+                message.textContent = 'Многое упускаешь в жизни';
+            } else if (answer === 'ploho') {
+                popup.className = 'result-popup incorrect';
+                title.textContent = 'Неверно';
+                message.textContent = 'Неправильный ответ';
+            } else {
+                popup.className = 'result-popup correct';
+                title.textContent = 'Верно!';
+                message.textContent = 'Правильный ответ';
+            }
+        }
+
+        function closeResult() {
+            document.getElementById('resultPopup').style.display = 'none';
+            
+            if (currentQuestion === 1) {
+                // Переход ко второму вопросу
+                document.getElementById('question1Screen').style.display = 'none';
+                document.getElementById('question2Screen').style.display = 'block';
+                currentQuestion = 2;
+                
+                // Активация кнопки для второго вопроса
+                const q2Radios = document.querySelectorAll('input[name="q2"]');
+                q2Radios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        document.getElementById('q2Btn').disabled = false;
+                    });
+                });
+            } else {
+                // Завершение теста
+                document.getElementById('question2Screen').style.display = 'none';
+                document.getElementById('finalScreen').style.display = 'block';
+                document.getElementById('finalMessage').textContent = 'Спасибо за участие, пидор';
+            }
+        }
+
+        function checkQuestion2() {
+            const answer = document.querySelector('input[name="q2"]:checked').value;
+            const popup = document.getElementById('resultPopup');
+            const title = document.getElementById('resultTitle');
+            const message = document.getElementById('resultMessage');
+
+            popup.style.display = 'block';
+
+            if (answer === 'hZ') {
+                popup.className = 'result-popup partially';
+                title.textContent = 'Частично верно';
+                message.textContent = 'Многое упускаешь, попробуй';
+            } else if (answer === 'ploho') {
+                popup.className = 'result-popup incorrect';
+                title.textContent = 'Неверно';
+                message.textContent = 'Неправильный ответ';
+            } else {
+                popup.className = 'result-popup correct';
+                title.textContent = 'Верно!';
+                message.textContent = 'Правильный ответ';
+            }
+        }
+    </script>
+</body>
+</html>
